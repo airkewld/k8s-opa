@@ -54,3 +54,23 @@ jobs:
             docker load -i k8s-opa.tar
             docker tag k8s-opa ttl.sh/k8s-opa
             docker push ttl.sh/k8s-opa
+
+  test-bad-demo:
+    needs: [push-image]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: test bad demo manifest
+        run: |
+            cat demo/bad-k8s.yaml | docker run ttl.sh/k8s-opa -
+
+  test-good-demo:
+    needs: [push-image]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: test good demo manifest
+        run: |
+            cat demo/good-k8s.yaml | docker run ttl.sh/k8s-opa -
