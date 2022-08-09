@@ -58,19 +58,21 @@ jobs:
   test-bad-demo:
     needs: [push-image]
     runs-on: ubuntu-latest
+    container:
+      image: ttl.sh/k8s-opa
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: test bad demo manifest
-        run: |
-            docker run -v $(pwd):/tmp ttl.sh/k8s-opa /tmp/demo/bad-k8s.yaml
+        run: demo/bad-k8s.yaml
 
   test-good-demo:
     needs: [push-image]
     runs-on: ubuntu-latest
+    container:
+      image: ttl.sh/k8s-opa
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: test good demo manifest
-        run: |
-            docker run -v $(pwd):/tmp ttl.sh/k8s-opa /tmp/demo/good-k8s.yaml
+        run: demo/good-k8s.yaml
