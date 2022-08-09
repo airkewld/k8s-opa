@@ -1,0 +1,56 @@
+name: build and deploy
+
+on:
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # run every 6 hours
+    - cron: '0 */6 * * *'
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: build docker image
+        run: |
+            docker build . -t k8s-opa
+            docker save k8s-opa > k8s-opa.tar
+      - name: upload image for scanning
+        uses: actions/upload-artifact@v3
+        with:
+          name: k8s-opa.tar
+          path: k8s-opa.tar
+          retention-days: 1
+
+  scan-image:
+    needs: [build-image]
+    runs-on: ubuntu-latest
+    container:
+      image: aquasec/trivy
+    steps:
+      - name: download image tar
+        uses: actions/download-artifact@v3
+        with:
+          name: k8s-opa.tar
+          path: ./
+      - name: scan image for vulnerabilities
+        run: |
+            trivy image --input k8s-opa.tar --ignore-unfixed -s CRITICAL -s HIGH
+
+  push-image:
+    needs: [scan-image]
+    runs-on: ubuntu-latest
+    steps:
+      - name: download image tar
+        uses: actions/download-artifact@v3
+        with:
+          name: k8s-opa.tar
+          path: ./
+      - name: tag and push image
+        run: |
+            docker load -i k8s-opa.tar
+            docker tag k8s-opa ttl.sh/k8s-opa
+            docker push ttl.sh/k8s-opa
