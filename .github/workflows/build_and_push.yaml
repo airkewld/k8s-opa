@@ -43,6 +43,9 @@ jobs:
   push-image:
     needs: [scan-image]
     runs-on: ubuntu-latest
+    env:
+      REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+      REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
     steps:
       - name: download image tar
         uses: actions/download-artifact@v3
@@ -54,6 +57,9 @@ jobs:
             docker load -i k8s-opa.tar
             docker tag k8s-opa ttl.sh/k8s-opa
             docker push ttl.sh/k8s-opa
+            echo $REGISTRY_TOKEN | docker login -u $REGISTRY_USER --password-stdin
+            docker tag k8s-opa airkewld/k8s-opa
+            docker push airkewld/k8s-opa
 
   test-bad-demo:
     needs: [push-image]
