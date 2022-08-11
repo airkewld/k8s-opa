@@ -11,7 +11,7 @@ deny_missing_resources[msg] {
   msg := sprintf("Container '%s' in '%s' '%s' is missing resources definitions.", [c.name, input.kind, input.metadata.name])
 }
 
-deny_resource_limits[msg] {
+warn_resource_limits[msg] {
   input.kind == kubernetes.inputs[_]
   c := kubernetes.containers[_]
   kubernetes.resources_limits(c)
